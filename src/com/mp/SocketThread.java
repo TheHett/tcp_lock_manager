@@ -53,12 +53,12 @@ public class SocketThread extends Thread {
                         String lockName = matcher.group(1);
                         Integer lockWait = Integer.parseInt(matcher.group(2));
                         if (Main.acquire(lockName, socket.toString(), lockWait)) {
-                            out.writeBytes("SUCCESS\n");
+                            out.writeBytes("SUCCESS\r\n");
                         } else {
-                            out.writeBytes("BUSY\n");
+                            out.writeBytes("BUSY\r\n");
                         }
                     } else {
-                        out.writeBytes("WRONG_ARGS\n\r");
+                        out.writeBytes("WRONG_ARGS\r\n");
                     }
                     out.flush();
                 } else if(line.toUpperCase().matches("RELEASE .*")) {
@@ -67,24 +67,25 @@ public class SocketThread extends Thread {
                         String lockName = matcher.group(1);
                         Main.release(lockName, socket.toString());
                     } else {
-                        out.writeBytes("WRONG_ARGS\n\r");
+                        out.writeBytes("WRONG_ARGS\r\n");
                     }
                     out.flush();
                 } else if(line.equalsIgnoreCase("STATUS")) {
                     for (Map.Entry<String, String> e : Main.locks.entrySet()) {
-                        out.writeBytes(e.getKey() + "\t" + e.getValue() + "\n\r");
+                        out.writeBytes(e.getKey() + "\t" + e.getValue() + "\r\n");
                     }
                     out.writeBytes("Total count: " + Main.locks.size());
+                    out.writeBytes("\r\n");
+                    out.writeBytes("\r\n");
                     out.flush();
                 } else if(line.equalsIgnoreCase("PING")) {
-                    out.writeBytes("PONG\n\r");
+                    out.writeBytes("PONG\r\n");
                     out.flush();
                 } else {
-                    out.writeBytes("Unknown request: " + line + "\n\r");
+                    out.writeBytes("Unknown request: " + line + "\r\n");
                     out.flush();
                 }
             } catch (SocketException e) {
-                e.printStackTrace();
                 Main.removeAllLocks(socket.toString());
                 try {
                     socket.close();

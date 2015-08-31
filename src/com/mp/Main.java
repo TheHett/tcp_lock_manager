@@ -36,6 +36,7 @@ public class Main {
                 }
                 System.out.println("Total active locks: " + total);
                 System.out.println("Total lock acquired: " + locksAcquired + " released: " + locksReleased);
+                System.out.println("-------------------------------------------------------------------------");
             }
         }, 1800, 1800, TimeUnit.SECONDS);
 
@@ -58,10 +59,9 @@ public class Main {
         }
     }
 
-    public static boolean acquire(String lockName, String owner, Integer wait)
-    {
+    public static boolean acquire(String lockName, String owner, Integer wait) {
         do {
-            if(locks.containsKey(lockName)) {
+            if (locks.containsKey(lockName)) {
                 try {
                     Thread.sleep(Math.min(250, wait));
                 } catch (InterruptedException e) {
@@ -70,6 +70,7 @@ public class Main {
                 wait -= 250;
             } else {
                 locks.put(lockName, owner);
+                locksAcquired++;
                 System.out.println("acquire " + lockName);
                 return true;
             }
@@ -79,23 +80,19 @@ public class Main {
         return false;
     }
 
-    public static void release(String lockName, String owner)
-    {
-        if(locks.remove(lockName, owner)) {
+    public static void release(String lockName, String owner) {
+        if (locks.remove(lockName, owner)) {
+            locksReleased++;
             System.out.println("release " + lockName);
         }
     }
 
-    public static void removeAllLocks(String owner)
-    {
-        if(owner == null)
+    public static void removeAllLocks(String owner) {
+        if (owner == null)
             return;
 
         for (Map.Entry<String, String> e : locks.entrySet()) {
-            if(e.getValue().equals(owner)) {
-                locks.remove(e.getKey());
-                System.out.println("release " + e.getKey());
-            }
+            release(e.getKey(), e.getValue());
         }
     }
 
