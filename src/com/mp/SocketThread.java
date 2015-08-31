@@ -53,12 +53,12 @@ public class SocketThread extends Thread {
                         String lockName = matcher.group(1);
                         Integer lockWait = Integer.parseInt(matcher.group(2));
                         if (Main.acquire(lockName, socket.toString(), lockWait)) {
-                            out.writeBytes("SUCCESS\r\n");
+                            out.writeBytes("SUCCESS\n");
                         } else {
-                            out.writeBytes("BUSY\r\n");
+                            out.writeBytes("BUSY\n");
                         }
                     } else {
-                        out.writeBytes("WRONG_ARGS\r\n");
+                        out.writeBytes("WRONG_ARGS\n");
                     }
                     out.flush();
                 } else if(line.toUpperCase().matches("RELEASE .*")) {
@@ -67,22 +67,22 @@ public class SocketThread extends Thread {
                         String lockName = matcher.group(1);
                         Main.release(lockName, socket.toString());
                     } else {
-                        out.writeBytes("WRONG_ARGS\r\n");
+                        out.writeBytes("WRONG_ARGS\n");
                     }
                     out.flush();
                 } else if(line.equalsIgnoreCase("STATUS")) {
                     for (Map.Entry<String, String> e : Main.locks.entrySet()) {
-                        out.writeBytes(e.getKey() + "\t" + e.getValue() + "\r\n");
+                        out.writeBytes(e.getKey() + "\t" + e.getValue() + "\n");
                     }
                     out.writeBytes("Total count: " + Main.locks.size());
-                    out.writeBytes("\r\n");
-                    out.writeBytes("\r\n");
+                    out.writeBytes("\n");
+                    out.writeBytes("\n");
                     out.flush();
                 } else if(line.equalsIgnoreCase("PING")) {
-                    out.writeBytes("PONG\r\n");
+                    out.writeBytes("PONG\n");
                     out.flush();
                 } else {
-                    out.writeBytes("Unknown request: " + line + "\r\n");
+                    out.writeBytes("Unknown request: " + line + "\n");
                     out.flush();
                 }
             } catch (SocketException e) {
