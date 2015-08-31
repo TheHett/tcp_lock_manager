@@ -7,10 +7,10 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class EchoThread extends Thread {
+public class SocketThread extends Thread {
     protected Socket socket;
 
-    public EchoThread(Socket clientSocket) throws SocketException {
+    public SocketThread(Socket clientSocket) throws SocketException {
         socket = clientSocket;
     }
 

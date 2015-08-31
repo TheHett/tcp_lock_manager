@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
 
@@ -13,6 +12,8 @@ public class Main {
     static final int PORT = 1234;
     static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     static volatile ConcurrentHashMap<String, String> locks = new ConcurrentHashMap<>();
+    static volatile int locksAcquired = 0;
+    static volatile int locksReleased = 0;
 
     public static void main(String args[]) {
 
@@ -34,6 +35,7 @@ public class Main {
                     total++;
                 }
                 System.out.println("Total active locks: " + total);
+                System.out.println("Total lock acquired: " + locksAcquired + " released: " + locksReleased);
             }
         }, 1800, 1800, TimeUnit.SECONDS);
 
@@ -48,7 +50,7 @@ public class Main {
                 System.out.println("I/O error: " + e);
             }
             try {
-                new EchoThread(socket).start();
+                new SocketThread(socket).start();
             } catch (SocketException e) {
                 removeAllLocks(socket.toString());
                 e.printStackTrace();
