@@ -53,7 +53,9 @@ public class Main {
             try {
                 new SocketThread(socket).start();
             } catch (SocketException e) {
-                removeAllLocks(socket.toString());
+                if (socket != null) {
+                    removeAllLocks(socket.toString());
+                }
                 e.printStackTrace();
             }
         }
