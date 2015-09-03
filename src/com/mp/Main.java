@@ -71,7 +71,6 @@ public class Main {
             } else {
                 locks.put(lockName, owner);
                 locksAcquired++;
-                System.out.println("acquire " + lockName);
                 return true;
             }
         } while (wait > 0);
@@ -83,7 +82,6 @@ public class Main {
     public static void release(String lockName, String owner) {
         if (locks.remove(lockName, owner)) {
             locksReleased++;
-            System.out.println("release " + lockName);
         }
     }
 
