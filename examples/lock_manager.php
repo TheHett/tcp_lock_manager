@@ -2,7 +2,7 @@
 
 class LockManager {
 
-    public $hostname = 'tcp://127.0.0.1';
+    public $hostname = "tcp://127.0.0.1";
 
     protected $_buffer;
     protected $_socket;
@@ -39,9 +39,9 @@ class LockManager {
         $this->write_line("LOCK {$name} {$timeoutMs}");
         $response = $this->read_line();
         switch($response) {
-            case 'SUCCESS':
+            case "SUCCESS":
                 return true;
-            case 'BUSY':
+            case "BUSY":
                 return false;
             default:
                 //@todo log unknown response
@@ -58,5 +58,23 @@ class LockManager {
         $this->write_line("RELEASE {$name}");
     }
 
+    public function ilock($name)
+    {
+        if($this->_socket === false) {
+            return false;
+        }
+
+        $this->write_line("ILOCK {$name}");
+        $response = $this->read_line();
+        switch ($response) {
+            case "YES":
+                return true;
+            case "NO":
+                return false;
+            default:
+                //@todo log unknown response
+                return false;
+        }
+    }
 
 }

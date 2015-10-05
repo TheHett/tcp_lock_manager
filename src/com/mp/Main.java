@@ -24,8 +24,9 @@ public class Main {
             serverSocket = new ServerSocket(PORT);
         } catch (IOException e) {
             e.printStackTrace();
-
         }
+
+        assert serverSocket != null;
 
         scheduler.scheduleAtFixedRate(new Runnable() {
             public void run() {
@@ -42,9 +43,9 @@ public class Main {
 
         System.out.println("Ready to accept connections");
 
+
         while (true) {
             try {
-                assert serverSocket != null;
                 socket = serverSocket.accept();
 
             } catch (IOException e) {
@@ -79,6 +80,12 @@ public class Main {
 
         // timeout has left
         return false;
+    }
+
+    public static boolean is_acquired(String lockName, String owner) {
+
+        return locks.containsKey(lockName)
+                && locks.get(lockName).equals(owner);
     }
 
     public static void release(String lockName, String owner) {
