@@ -99,7 +99,9 @@ public class Main {
             return;
 
         for (Map.Entry<String, String> e : locks.entrySet()) {
-            release(e.getKey(), e.getValue());
+            if(e.getValue().equals(owner)) {
+                release(e.getKey(), owner);
+            }
         }
     }
 
