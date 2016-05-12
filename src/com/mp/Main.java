@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
 
@@ -14,6 +16,7 @@ public class Main {
     static volatile ConcurrentHashMap<String, String> locks = new ConcurrentHashMap<>();
     static volatile int locksAcquired = 0;
     static volatile int locksReleased = 0;
+    static HashMap<String, Socket> sockets = new HashMap<>();
 
     public static void main(String args[]) {
 
@@ -30,24 +33,31 @@ public class Main {
 
         scheduler.scheduleAtFixedRate(new Runnable() {
             public void run() {
-                int total = 0;
-                for (Map.Entry<String, String> e : Main.locks.entrySet()) {
-                    System.out.println(e.getKey() + "\t" + e.getValue() + "\n\r");
-                    total++;
+                for (Map.Entry<String, Socket> e : sockets.entrySet()) {
+                    try {
+                        System.out.println("Check socket + " + e.getKey());
+                        if(e.getValue().isClosed() || !e.getValue().isConnected()) {
+                            throw new IOException("Socket is not reachable");
+                        }
+                    } catch (IOException e1) {
+                        sockets.remove(e.getKey());
+                        removeAllLocks(e.getKey());
+                        try {
+                            e.getValue().close();
+                        } catch (IOException e2) {
+                            e2.printStackTrace();
+                        }
+                    }
                 }
-                System.out.println("Total active locks: " + total);
-                System.out.println("Total lock acquired: " + locksAcquired + " released: " + locksReleased);
-                System.out.println("-------------------------------------------------------------------------");
             }
-        }, 1800, 1800, TimeUnit.SECONDS);
+        }, 600, 600, TimeUnit.SECONDS);
 
         System.out.println("Ready to accept connections");
-
 
         while (true) {
             try {
                 socket = serverSocket.accept();
-
+                sockets.put(socket.toString(), socket);
             } catch (IOException e) {
                 System.out.println("I/O error: " + e);
             }
@@ -97,7 +107,6 @@ public class Main {
     public static void removeAllLocks(String owner) {
         if (owner == null)
             return;
-
         for (Map.Entry<String, String> e : locks.entrySet()) {
             if(e.getValue().equals(owner)) {
                 release(e.getKey(), owner);

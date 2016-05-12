@@ -120,17 +120,14 @@ public class SocketThread extends Thread {
                     out.writeBytes("Unknown request: " + line + "\n");
                     out.flush();
                 }
-            } catch (SocketException e) {
-                Main.removeAllLocks(socket.toString());
+            } catch (IOException e) {
                 try {
+                    Main.removeAllLocks(socket.toString());
                     socket.close();
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
-
                 return;
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
     }
