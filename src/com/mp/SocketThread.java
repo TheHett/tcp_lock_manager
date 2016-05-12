@@ -1,5 +1,7 @@
 package com.mp;
 
+import com.sun.org.apache.xerces.internal.impl.xpath.regex.Match;
+
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
@@ -30,10 +32,11 @@ public class SocketThread extends Thread {
         Pattern patternLock = Pattern.compile("LOCK ([\\da-zA-Z_-]+) (\\d+)", Pattern.CASE_INSENSITIVE);
         Pattern patternILock = Pattern.compile("ILOCK ([\\da-zA-Z_-]+)", Pattern.CASE_INSENSITIVE);
         Pattern patternRelease = Pattern.compile("RELEASE ([\\da-zA-Z_-]+)", Pattern.CASE_INSENSITIVE);
+        Pattern patternFree = Pattern.compile("FREE ([\\da-zA-Z_-]+)\\s+([\\S]+)", Pattern.CASE_INSENSITIVE);
 
         while (true) {
             try {
-                if(!socket.isConnected()) {
+                if (!socket.isConnected()) {
                     Main.removeAllLocks(socket.toString());
                     return;
                 }
@@ -64,14 +67,14 @@ public class SocketThread extends Thread {
                     out.flush();
                 } else if(line.toUpperCase().matches("RELEASE .*")) {
                     Matcher matcher = patternRelease.matcher(line);
-                    if(matcher.matches()) {
+                    if (matcher.matches()) {
                         String lockName = matcher.group(1);
                         Main.release(lockName, socket.toString());
                     } else {
                         out.writeBytes("WRONG_ARGS\n");
                     }
                     out.flush();
-                } else if(line.equalsIgnoreCase("STATUS")) {
+                } else if (line.equalsIgnoreCase("STATUS")) {
                     for (Map.Entry<String, String> e : Main.locks.entrySet()) {
                         out.writeBytes(e.getKey() + "\t" + e.getValue() + "\n");
                     }
@@ -92,8 +95,26 @@ public class SocketThread extends Thread {
                         out.writeBytes("WRONG_ARGS\n");
                     }
                     out.flush();
-                } else if(line.equalsIgnoreCase("PING")) {
+                } else if (line.equalsIgnoreCase("PING")) {
                     out.writeBytes("PONG\n");
+                    out.flush();
+                } else if (line.toUpperCase().matches("^FREE .*")) {
+                    Matcher matcher = patternFree.matcher(line);
+                    if (matcher.matches()) {
+                        String lockName = matcher.group(1);
+                        String socketName = matcher.group(2);
+                        if (Main.is_acquired(lockName, socketName)) {
+                            Main.release(lockName, socketName);
+                            out.writeBytes("SUCCESS\n");
+                        } else {
+                            out.writeBytes("NOT_FOUND\n");
+                        }
+                    } else {
+                        out.writeBytes("WRONG_ARGS\n");
+                    }
+                    out.flush();
+                } else if (line.equalsIgnoreCase("HELP")) {
+                    out.writeBytes("QUIT|LOCK|RELEASE|STATUS|ILOCK|PING|FREE|HELP\n");
                     out.flush();
                 } else {
                     out.writeBytes("Unknown request: " + line + "\n");
