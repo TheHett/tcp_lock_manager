@@ -12,10 +12,10 @@ public class Main {
 
     private static final int PORT = 1234;
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    static volatile ConcurrentHashMap<String, String> locks = new ConcurrentHashMap<>();
-    static volatile int locksAcquired = 0;
-    static volatile int locksReleased = 0;
-    private static HashMap<String, Socket> sockets = new HashMap<>();
+    static ConcurrentHashMap<String, String> locks = new ConcurrentHashMap<>();
+    static volatile long locksAcquired = 0;
+    static volatile long locksReleased = 0;
+    private static ConcurrentHashMap<String, Socket> sockets = new ConcurrentHashMap<>();
 
     public static void main(String args[]) {
 
@@ -81,7 +81,9 @@ public class Main {
                 wait -= 250;
             } else {
                 locks.put(lockName, owner);
-                locksAcquired++;
+                synchronized (Main.class){
+                    locksAcquired++;
+                }
                 return true;
             }
         } while (wait > 0);
@@ -98,7 +100,9 @@ public class Main {
 
     static void release(String lockName, String owner) {
         if (locks.remove(lockName, owner)) {
-            locksReleased++;
+            synchronized (Main.class) {
+                locksReleased++;
+            }
         }
     }
 
