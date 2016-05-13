@@ -1,7 +1,5 @@
 package com.mp;
 
-import com.sun.org.apache.xerces.internal.impl.xpath.regex.Match;
-
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
@@ -9,10 +7,10 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class SocketThread extends Thread {
-    protected Socket socket;
+class SocketThread extends Thread {
+    private Socket socket;
 
-    public SocketThread(Socket clientSocket) throws SocketException {
+    SocketThread(Socket clientSocket) throws SocketException {
         socket = clientSocket;
     }
 
@@ -51,7 +49,7 @@ public class SocketThread extends Thread {
                     Main.removeAllLocks(socket.toString());
                     socket.close();
                     return;
-                } else if(line.toUpperCase().matches("LOCK .*")) {
+                } else if (line.toUpperCase().matches("LOCK .*")) {
                     Matcher matcher = patternLock.matcher(line);
                     if (matcher.matches()) {
                         String lockName = matcher.group(1);
@@ -65,7 +63,7 @@ public class SocketThread extends Thread {
                         out.writeBytes("WRONG_ARGS\n");
                     }
                     out.flush();
-                } else if(line.toUpperCase().matches("RELEASE .*")) {
+                } else if (line.toUpperCase().matches("RELEASE .*")) {
                     Matcher matcher = patternRelease.matcher(line);
                     if (matcher.matches()) {
                         String lockName = matcher.group(1);
@@ -83,7 +81,7 @@ public class SocketThread extends Thread {
                     out.writeBytes("\n");
                     out.writeBytes("\n");
                     out.flush();
-                } else if(line.toUpperCase().matches("ILOCK .*")) {
+                } else if (line.toUpperCase().matches("ILOCK .*")) {
                     Matcher matcher = patternILock.matcher(line);
                     if (matcher.matches()) {
                         String lockName = matcher.group(1);

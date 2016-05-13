@@ -4,19 +4,18 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
 
 public class Main {
 
-    static final int PORT = 1234;
-    static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private static final int PORT = 1234;
+    private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     static volatile ConcurrentHashMap<String, String> locks = new ConcurrentHashMap<>();
     static volatile int locksAcquired = 0;
     static volatile int locksReleased = 0;
-    static HashMap<String, Socket> sockets = new HashMap<>();
+    private static HashMap<String, Socket> sockets = new HashMap<>();
 
     public static void main(String args[]) {
 
@@ -35,7 +34,7 @@ public class Main {
             public void run() {
                 for (Map.Entry<String, Socket> e : sockets.entrySet()) {
                     try {
-                        if(e.getValue().isClosed() || !e.getValue().isConnected()) {
+                        if (e.getValue().isClosed() || !e.getValue().isConnected()) {
                             throw new IOException("Socket is not reachable");
                         }
                     } catch (IOException e1) {
@@ -71,7 +70,7 @@ public class Main {
         }
     }
 
-    public static boolean acquire(String lockName, String owner, Integer wait) {
+    static boolean acquire(String lockName, String owner, Integer wait) {
         do {
             if (locks.containsKey(lockName)) {
                 try {
@@ -91,23 +90,23 @@ public class Main {
         return false;
     }
 
-    public static boolean is_acquired(String lockName, String owner) {
+    static boolean is_acquired(String lockName, String owner) {
 
         return locks.containsKey(lockName)
                 && locks.get(lockName).equals(owner);
     }
 
-    public static void release(String lockName, String owner) {
+    static void release(String lockName, String owner) {
         if (locks.remove(lockName, owner)) {
             locksReleased++;
         }
     }
 
-    public static void removeAllLocks(String owner) {
+    static void removeAllLocks(String owner) {
         if (owner == null)
             return;
         for (Map.Entry<String, String> e : locks.entrySet()) {
-            if(e.getValue().equals(owner)) {
+            if (e.getValue().equals(owner)) {
                 release(e.getKey(), owner);
             }
         }
