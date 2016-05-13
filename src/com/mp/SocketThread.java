@@ -78,6 +78,7 @@ public class SocketThread extends Thread {
                     for (Map.Entry<String, String> e : Main.locks.entrySet()) {
                         out.writeBytes(e.getKey() + "\t" + e.getValue() + "\n");
                     }
+                    out.writeBytes("Total lock acquired: " + Main.locksAcquired + " released: " + Main.locksReleased + "\n");
                     out.writeBytes("Total count: " + Main.locks.size());
                     out.writeBytes("\n");
                     out.writeBytes("\n");

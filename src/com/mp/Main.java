@@ -35,7 +35,6 @@ public class Main {
             public void run() {
                 for (Map.Entry<String, Socket> e : sockets.entrySet()) {
                     try {
-                        System.out.println("Check socket + " + e.getKey());
                         if(e.getValue().isClosed() || !e.getValue().isConnected()) {
                             throw new IOException("Socket is not reachable");
                         }
