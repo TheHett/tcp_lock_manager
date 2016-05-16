@@ -80,8 +80,7 @@ public class Main {
                 }
                 wait -= 250;
             } else {
-                locks.put(lockName, owner);
-                synchronized (Main.class){
+                if(locks.put(lockName, owner) == null) {
                     locksAcquired++;
                 }
                 return true;
@@ -100,9 +99,7 @@ public class Main {
 
     static void release(String lockName, String owner) {
         if (locks.remove(lockName, owner)) {
-            synchronized (Main.class) {
-                locksReleased++;
-            }
+            locksReleased++;
         }
     }
 

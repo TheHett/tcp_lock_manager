@@ -23,6 +23,7 @@ class SocketThread extends Thread {
             bufferedReader = new BufferedReader(new InputStreamReader(inp));
             out = new DataOutputStream(socket.getOutputStream());
         } catch (IOException e) {
+            e.printStackTrace();
             return;
         }
         String line;
@@ -126,6 +127,7 @@ class SocketThread extends Thread {
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
+                e.printStackTrace();
                 return;
             }
         }
