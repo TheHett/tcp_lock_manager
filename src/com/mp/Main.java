@@ -19,16 +19,15 @@ public class Main {
 
     public static void main(String args[]) {
 
-        ServerSocket serverSocket = null;
-        Socket socket = null;
+        ServerSocket serverSocket;
+        Socket socket;
 
         try {
             serverSocket = new ServerSocket(PORT);
         } catch (IOException e) {
             e.printStackTrace();
+            return;
         }
-
-        assert serverSocket != null;
 
         scheduler.scheduleAtFixedRate(new Runnable() {
             public void run() {
@@ -45,6 +44,7 @@ public class Main {
                         } catch (IOException e2) {
                             e2.printStackTrace();
                         }
+                        e1.printStackTrace();
                     }
                 }
             }
@@ -55,16 +55,15 @@ public class Main {
         while (true) {
             try {
                 socket = serverSocket.accept();
-                sockets.put(socket.toString(), socket);
-            } catch (IOException e) {
-                System.out.println("I/O error: " + e);
-            }
-            try {
-                new SocketThread(socket).start();
-            } catch (SocketException e) {
-                if (socket != null) {
+                try {
+                    sockets.put(socket.toString(), socket);
+                    new SocketThread(socket).start();
+                } catch (SocketException e) {
                     removeAllLocks(socket.toString());
+                    e.printStackTrace();
                 }
+
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
@@ -80,10 +79,15 @@ public class Main {
                 }
                 wait -= 250;
             } else {
-                if(locks.put(lockName, owner) == null) {
-                    locksAcquired++;
+                if (locks.put(lockName, owner) == null) {
+                    synchronized (Main.class) {
+                        locksAcquired++;
+                    }
+                    //success acquire
+                    return true;
                 }
-                return true;
+                //lock already acquired
+                return false;
             }
         } while (wait > 0);
 
@@ -92,20 +96,21 @@ public class Main {
     }
 
     static boolean is_acquired(String lockName, String owner) {
-
         return locks.containsKey(lockName)
                 && locks.get(lockName).equals(owner);
     }
 
     static void release(String lockName, String owner) {
+        if (owner == null)
+            return;
         if (locks.remove(lockName, owner)) {
-            locksReleased++;
+            synchronized (Main.class) {
+                locksReleased++;
+            }
         }
     }
 
     static void removeAllLocks(String owner) {
-        if (owner == null)
-            return;
         for (Map.Entry<String, String> e : locks.entrySet()) {
             if (e.getValue().equals(owner)) {
                 release(e.getKey(), owner);
