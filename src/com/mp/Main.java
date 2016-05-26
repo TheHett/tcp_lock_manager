@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
 
@@ -18,7 +17,6 @@ public class Main {
     private static ConcurrentHashMap<String, Socket> sockets = new ConcurrentHashMap<>();
 
     public static void main(String args[]) {
-
         ServerSocket serverSocket;
         Socket socket;
 
@@ -28,7 +26,6 @@ public class Main {
             e.printStackTrace();
             return;
         }
-
         scheduler.scheduleAtFixedRate(new Runnable() {
             public void run() {
                 for (Map.Entry<String, Socket> e : sockets.entrySet()) {
@@ -55,6 +52,8 @@ public class Main {
         while (true) {
             try {
                 socket = serverSocket.accept();
+                socket.setTcpNoDelay(true);
+                socket.setKeepAlive(true);
                 try {
                     sockets.put(socket.toString(), socket);
                     new SocketThread(socket).start();
