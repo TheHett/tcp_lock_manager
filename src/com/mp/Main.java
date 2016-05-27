@@ -14,7 +14,6 @@ public class Main {
     static ConcurrentHashMap<String, String> locks = new ConcurrentHashMap<>();
     static volatile long locksAcquired = 0;
     static volatile long locksReleased = 0;
-    private static ConcurrentHashMap<String, Socket> sockets = new ConcurrentHashMap<>();
 
     public static void main(String args[]) {
         ServerSocket serverSocket;
@@ -26,27 +25,6 @@ public class Main {
             e.printStackTrace();
             return;
         }
-        scheduler.scheduleAtFixedRate(new Runnable() {
-            public void run() {
-                for (Map.Entry<String, Socket> e : sockets.entrySet()) {
-                    try {
-                        if (e.getValue().isClosed() || !e.getValue().isConnected()) {
-                            throw new IOException("Socket is not reachable");
-                        }
-                    } catch (IOException e1) {
-                        sockets.remove(e.getKey());
-                        removeAllLocks(e.getKey());
-                        try {
-                            e.getValue().close();
-                        } catch (IOException e2) {
-                            e2.printStackTrace();
-                        }
-                        e1.printStackTrace();
-                    }
-                }
-            }
-        }, 600, 600, TimeUnit.SECONDS);
-
         System.out.println("Ready to accept connections");
 
         while (true) {
@@ -55,7 +33,6 @@ public class Main {
                 socket.setTcpNoDelay(true);
                 socket.setKeepAlive(true);
                 try {
-                    sockets.put(socket.toString(), socket);
                     new SocketThread(socket).start();
                 } catch (SocketException e) {
                     removeAllLocks(socket.toString());
