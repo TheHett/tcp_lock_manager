@@ -37,6 +37,7 @@ public class Main {
                 } catch (SocketException e) {
                     removeAllLocks(socket.toString());
                     e.printStackTrace();
+                    socket.close();
                 }
 
             } catch (IOException e) {
