@@ -5,12 +5,12 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Main {
 
     private static final int PORT = 1234;
-    private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private static final int LOCK_CHECKS_INTERVAL_MS = 125;
     static ConcurrentHashMap<String, String> locks = new ConcurrentHashMap<>();
     static volatile long locksAcquired = 0;
     static volatile long locksReleased = 0;
@@ -46,26 +46,24 @@ public class Main {
         }
     }
 
-    static boolean acquire(String lockName, String owner, Integer wait) {
+    static boolean acquire(String lockName, String owner, int wait) {
         do {
-            if (locks.containsKey(lockName)) {
+            if (locks.putIfAbsent(lockName, owner) == null) {
+                synchronized (Main.class) {
+                    locksAcquired++;
+                }
+
+                //success acquire
+                return true;
+            } else {
                 try {
-                    Thread.sleep(Math.min(250, wait));
+                    Thread.sleep(Math.min(LOCK_CHECKS_INTERVAL_MS, wait));
                 } catch (InterruptedException e) {
+
                     return false;
                 }
-                wait -= 250;
-            } else {
-                if (locks.put(lockName, owner) == null) {
-                    synchronized (Main.class) {
-                        locksAcquired++;
-                    }
-                    //success acquire
-                    return true;
-                }
-                //lock already acquired
-                return false;
             }
+            wait -= LOCK_CHECKS_INTERVAL_MS;
         } while (wait > 0);
 
         // timeout has left
